@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "sourceOfTruth": "output-repo",
+    "managedRepo": "toolfactory",
+    "shippedArtifactOwner": "customer",
+    "requiredGates": [
+      "doctor",
+      "validate",
+      "validate-workflow",
+      "build",
+      "export"
+    ],
+    "auditSignals": [
+      "catalog",
+      "compatibility",
+      "template-manifest"
+    ]
+  }
+}

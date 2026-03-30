@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "workflowPath": "validation/workflow/validation.yxmd",
+  "inputDir": "validation/input",
+  "outputDir": "validation/output",
+  "logDir": "validation/logs",
+  "expectedDir": "validation/expected",
+  "engineCommand": "AlteryxEngineCmd.exe"
+}

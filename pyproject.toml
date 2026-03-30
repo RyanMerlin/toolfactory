@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "toolsmith"
+version = "0.1.0"
+description = "GitOps-style tool scaffolding/build for Alteryx AYX Python SDK v2"
+requires-python = ">=3.10"
+dependencies = [
+  "pyyaml>=6.0.0",
+  "jsonschema>=4.20.0",
+  "packaging>=24.0",
+]
+
+[project.scripts]
+toolsmith = "toolsmith.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["toolsmith*"]

@@ -1,0 +1,31 @@
+{
+  "name": "tool-factory",
+  "version": "0.1.0",
+  "description": "Codex-native tool factory for Alteryx Platform SDK tools",
+  "skills": [
+    {
+      "path": "../.agents/skills/scaffold-and-validate-alteryx-tool/SKILL.md"
+    },
+    {
+      "path": "../.agents/skills/scaffold-new-alteryx-tool/SKILL.md"
+    },
+    {
+      "path": "../.agents/skills/validate-alteryx-tool/SKILL.md"
+    },
+    {
+      "path": "../.agents/skills/package-yxi/SKILL.md"
+    },
+    {
+      "path": "../.agents/skills/upgrade-sdk-dependencies/SKILL.md"
+    },
+    {
+      "path": "../.agents/skills/generate-tool-docs/SKILL.md"
+    },
+    {
+      "path": "../.agents/skills/maintain-tool-catalog/SKILL.md"
+    },
+    {
+      "path": "../.agents/skills/troubleshoot-build-or-packaging-failure/SKILL.md"
+    }
+  ]
+}

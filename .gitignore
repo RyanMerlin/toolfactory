@@ -1,0 +1,14 @@
+.env
+.venv/
+.venv-win/
+.venv310/
+.pytest_cache/
+__pycache__/
+*.pyc
+.tmp_probe/
+.local-tools/
+tools/**/dist/
+tools/**/workspace/.ayx_cli.cache/
+tools/**/workspace/build/
+tools/**/workspace/__pycache__/
+tools/**/workspace/node_modules/

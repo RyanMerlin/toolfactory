@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tool Validation Contract",
+  "type": "object",
+  "required": ["schemaVersion", "workflowPath", "outputDir", "logDir", "engineCommand"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "workflowPath": { "type": "string", "minLength": 1 },
+    "inputDir": { "type": "string", "minLength": 1 },
+    "outputDir": { "type": "string", "minLength": 1 },
+    "logDir": { "type": "string", "minLength": 1 },
+    "expectedDir": { "type": "string", "minLength": 1 },
+    "engineCommand": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

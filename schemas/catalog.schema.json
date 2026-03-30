@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tool Factory Catalog",
+  "type": "object",
+  "required": ["schemaVersion", "tools"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "tools": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["sourceRepo", "path", "packageName"],
+        "properties": {
+          "sourceRepo": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "packageName": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

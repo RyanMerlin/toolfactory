@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "templates": {
+    "tool-skeleton": {
+      "path": "templates/tool-skeleton",
+      "purpose": "Starter tool scaffold"
+    },
+    "validation-skeleton": {
+      "path": "templates/validation-skeleton",
+      "purpose": "Per-tool validation workflow scaffold"
+    }
+  }
+}

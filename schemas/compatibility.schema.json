@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tool Factory Compatibility",
+  "type": "object",
+  "required": ["schemaVersion", "alteryx"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "alteryx": {
+      "type": "object",
+      "required": ["platformSdk", "tooling", "commandLineRunner"],
+      "properties": {
+        "platformSdk": { "type": "string", "minLength": 1 },
+        "tooling": {
+          "type": "object",
+          "required": ["python", "node"],
+          "properties": {
+            "python": { "type": "string", "minLength": 1 },
+            "node": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": true
+        },
+        "commandLineRunner": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

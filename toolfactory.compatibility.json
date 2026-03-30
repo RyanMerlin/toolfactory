@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "alteryx": {
+    "platformSdk": "current",
+    "tooling": {
+      "python": "3.10",
+      "node": "16.20.1"
+    },
+    "commandLineRunner": "AlteryxEngineCmd.exe"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Alteryx Tool Spec",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "type": "string", "const": "toolsmith.alteryx/v1" },
+    "kind": { "type": "string", "const": "AyxTool" },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "slug"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "spec": {
+      "type": "object",
+      "required": ["alteryx_version", "tool_type", "version", "category"],
+      "properties": {
+        "alteryx_version": { "type": "string", "minLength": 1 },
+        "tool_type": {
+          "type": "string",
+          "enum": [
+            "single-input-single-output",
+            "input",
+            "output",
+            "multiple-inputs",
+            "multiple-outputs"
+          ]
+        },
+        "version": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "author": { "type": "string" },
+        "company": { "type": "string" },
+        "package_name": { "type": "string" },
+        "omit_ui": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

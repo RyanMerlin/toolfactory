@@ -1,0 +1,8 @@
+{
+  "plugins": [
+    {
+      "path": "../../.codex-plugin",
+      "name": "tool-factory"
+    }
+  ]
+}
