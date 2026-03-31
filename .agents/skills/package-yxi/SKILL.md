@@ -1,6 +1,11 @@
+---
+name: package-yxi
+description: Package a generated Alteryx tool workspace into a distributable YXI.
+---
+
 # package-yxi
 
-Build a YXI package for a validated tool.
+Build a YXI package for a validated tool in the configured output repo.
 
 ## Use When
 
@@ -13,9 +18,9 @@ Build a YXI package for a validated tool.
 
 ## Workflow
 
-- Confirm the workspace exists.
+- Confirm the workspace exists and has already passed validation.
 - Run the YXI build flow.
-- Copy the produced YXI into the tool's dist folder.
+- Copy the produced YXI into the tool's dist folder in the output repo.
 - Record the package location for release and catalog updates.
 
 ## Guardrails

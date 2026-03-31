@@ -1,6 +1,11 @@
+---
+name: upgrade-sdk-dependencies
+description: Upgrade Alteryx SDK dependencies and reconcile compatibility updates.
+---
+
 # upgrade-sdk-dependencies
 
-Upgrade pinned Alteryx SDK, CLI, or support dependencies in a controlled way.
+Upgrade pinned Alteryx SDK, CLI, or support dependencies in a controlled way, then update the compatibility matrix and templates together.
 
 ## Use When
 
@@ -9,10 +14,10 @@ Upgrade pinned Alteryx SDK, CLI, or support dependencies in a controlled way.
 
 ## Workflow
 
-- Update compatibility constants.
-- Update template pins.
-- Update docs and release notes.
-- Run validation and packaging smoke tests.
+- Update compatibility constants first.
+- Update template pins second.
+- Update docs and release notes last.
+- Run validation and packaging smoke tests before export.
 
 ## Guardrails
 

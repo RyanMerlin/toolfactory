@@ -59,3 +59,10 @@ Tool Factory is the harness repo for generating and maintaining Alteryx Platform
 - Prefer `docs/reference/` for local Alteryx SDK context before browsing the web.
 - For new example tools, use the supported Alteryx CLI path first: initialize a temp workspace, generate the tool there, package it, then promote the finished workspace into the output repo.
 - Keep generated artifacts out of the harness repo. The harness documents the pattern; the output repo owns the actual tool workspace, package, and build outputs.
+
+## New SDK Tool Rule
+
+- New SDK tools must be scaffolded from `ayx_plugin_cli` output only.
+- Do not fabricate SDK workspace files by hand.
+- Do not copy another generated tool as a structural substitute.
+- If `ayx_plugin_cli` is not runnable, stop and fix that dependency rather than inventing a workspace.

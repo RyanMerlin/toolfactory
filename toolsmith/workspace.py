@@ -27,8 +27,8 @@ IGNORED_WORKSPACE_PARTS = {
 }
 
 
-def _run(cmd: list[str], cwd: Path) -> None:
-    p = subprocess.run(cmd, cwd=str(cwd), shell=False)
+def _run(cmd: list[str], cwd: Path, env: dict[str, str] | None = None) -> None:
+    p = subprocess.run(cmd, cwd=str(cwd), shell=False, env=env)
     if p.returncode != 0:
         raise RuntimeError(f"Command failed ({p.returncode}): {' '.join(cmd)} (cwd={cwd})")
 
@@ -52,6 +52,27 @@ def _capture(cmd: list[str]) -> str:
             f"Command failed ({p.returncode}): {' '.join(cmd)}\n{p.stdout}\n{p.stderr}"
         )
     return p.stdout.strip()
+
+
+def _verify_ayx_plugin_cli(ayx_plugin_cli: str) -> None:
+    # The factory must never fabricate an SDK workspace when the CLI is missing or broken.
+    candidates = [
+        [ayx_plugin_cli, "--help"],
+        [ayx_plugin_cli, "version"],
+    ]
+    errors: list[str] = []
+    for cmd in candidates:
+        p = subprocess.run(cmd, cwd=None, capture_output=True, text=True, shell=False)
+        if p.returncode == 0:
+            return
+        errors.append(
+            f"Command failed ({p.returncode}): {' '.join(cmd)}\n{p.stdout}\n{p.stderr}"
+        )
+    raise RuntimeError(
+        "ayx_plugin_cli was resolved but is not runnable. The Tool Factory requires the CLI "
+        "to generate the initial SDK workspace; manual workspace fabrication is forbidden.\n"
+        + "\n---\n".join(errors)
+    )
 
 
 def enforce_dev_runtime(compat: Compat) -> None:
@@ -203,7 +224,14 @@ def scaffold_workspace(spec: ToolSpec, workspace_root: Path | None = None) -> No
     ayx_plugin_cli = resolve_ayx_plugin_cli()
 
     enforce_dev_runtime(compat)
+    _verify_ayx_plugin_cli(ayx_plugin_cli)
+    if workspace_root is None:
+        # The only acceptable scaffold source is the CLI-produced workspace in the tool folder.
+        # Do not create any alternate template or synthesized workspace tree here.
+        pass
 
+    if ws_dir.exists():
+        shutil.rmtree(ws_dir)
     ws_dir.mkdir(parents=True, exist_ok=True)
 
     # Non-interactive init using documented parameters (package-name + backend-language are required).
@@ -220,15 +248,9 @@ def scaffold_workspace(spec: ToolSpec, workspace_root: Path | None = None) -> No
     ]
     if spec.description:
         cmd_init.extend(["--description", spec.description])
-    if spec.author:
-        cmd_init.extend(["--author", spec.author])
-    if spec.company:
-        cmd_init.extend(["--company", spec.company])
+    cmd_init.extend(["--author", spec.author or ""])
+    cmd_init.extend(["--company", spec.company or ""])
     _run(cmd_init, cwd=ws_dir)
-
-    writes_output = spec.tool_type in {"output", "multiple-outputs"}
-    writes_output_flag = "--writes-output-data" if writes_output else "--no-writes-output-data"
-    omit_ui_flag = "--omit-ui" if spec.omit_ui else "--no-omit-ui"
 
     base_create_tool = [
         ayx_plugin_cli,
@@ -237,13 +259,19 @@ def scaffold_workspace(spec: ToolSpec, workspace_root: Path | None = None) -> No
         spec.name,
         "--tool-type",
         spec.tool_type,
-        writes_output_flag,
         "--description",
         spec.description or "",
         "--dcm-namespace",
         spec.package_name,
-        omit_ui_flag,
     ]
+    if spec.tool_type in {"output", "multiple-outputs"}:
+        base_create_tool.append("--writes-output-data")
+    else:
+        base_create_tool.append("--no-writes-output-data")
+    if spec.omit_ui:
+        base_create_tool.append("--omit-ui")
+    else:
+        base_create_tool.append("--no-omit-ui")
     # ayx_plugin_cli uses --tool-version in newer versions; some older docs use --version.
     _run_with_fallback(
         [
@@ -304,7 +332,9 @@ def build_yxi(spec: ToolSpec) -> Path:
             f"No workspace found for {spec.slug}. Run: toolsmith scaffold {spec.path}"
         )
 
-    _run([ayx_plugin_cli, "create-yxi"], cwd=ws_dir)
+    build_env = os.environ.copy()
+    build_env.setdefault("NODE_OPTIONS", "--openssl-legacy-provider")
+    _run([ayx_plugin_cli, "create-yxi"], cwd=ws_dir, env=build_env)
 
     yxi_dir = ws_dir / "build" / "yxi"
     if not yxi_dir.exists():

@@ -1,6 +1,11 @@
+---
+name: troubleshoot-build-or-packaging-failure
+description: Diagnose and fix failures in scaffold, validation, reconcile, build, export, or YXI packaging.
+---
+
 # troubleshoot-build-or-packaging-failure
 
-Diagnose and fix failures in scaffold, validation, reconcile, or YXI packaging.
+Diagnose and fix failures in scaffold, validation, reconcile, build, export, or YXI packaging.
 
 ## Use When
 
@@ -10,7 +15,7 @@ Diagnose and fix failures in scaffold, validation, reconcile, or YXI packaging.
 
 ## Workflow
 
-- Read the failing command and artifact path.
-- Check compatibility and environment pins.
-- Check template drift.
+- Read the failing command and artifact path in the output repo or generated workspace.
+- Check compatibility and environment pins against the current matrix.
+- Check template drift and output-repo drift.
 - Fix the smallest root cause first.

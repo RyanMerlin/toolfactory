@@ -14,12 +14,15 @@ from toolsmith.config import ensure_output_repo_path, load_config, write_config
 from toolsmith.intent import generate_intent_payload, intent_root, write_intent_file
 from toolsmith.governance import governance_summary
 from toolsmith.maintenance import maintenance_report
+from toolsmith.policy import render_policy_summary, render_policy_text
 from toolsmith.pythonpack import ensure_python_packaging_layout
 from toolsmith.spec import find_tool_specs, load_schema, load_spec, validate_spec
 from toolsmith.validation import (
     ensure_validation_contract,
     generate_validation_contract,
     validation_summary,
+    run_designer_install_smoke_test,
+    run_post_install_validation,
     run_validation_workflow,
 )
 from toolsmith.workspace import build_yxi, reconcile_workspace, scaffold_workspace, write_lock
@@ -58,6 +61,8 @@ def cmd_validate(args: argparse.Namespace) -> None:
             f"Validation workflow failed for {spec.slug}: {result['returnCode']}\n"
             f"{result['stderr'] or result['stdout'] or ''}"
         )
+    post_install = run_post_install_validation(spec.path.parent)
+    result["postInstall"] = post_install
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
@@ -282,6 +287,15 @@ def cmd_doctor(_: argparse.Namespace) -> None:
         )
 
 
+def cmd_smoke_test_installed_tool(args: argparse.Namespace) -> None:
+    result = run_designer_install_smoke_test(Path(args.installed_tool_dir))
+    print(json.dumps(result, indent=2, sort_keys=True))
+    if result["status"] != "passed":
+        raise RuntimeError(
+            f"Installed tool smoke test failed for {args.installed_tool_dir}: {result['returnCode']}"
+        )
+
+
 def cmd_governance(_: argparse.Namespace) -> None:
     cfg = load_config(_repo_root())
     output_root = ensure_output_repo_path(cfg.output_repo_path)
@@ -289,6 +303,12 @@ def cmd_governance(_: argparse.Namespace) -> None:
     compat = json.loads(_compat_path().read_text(encoding="utf-8"))
     summary = governance_summary(_repo_root(), catalog, compat)
     print(json.dumps(summary, indent=2, sort_keys=True))
+
+
+def cmd_policy_show(_: argparse.Namespace) -> None:
+    print(json.dumps(render_policy_summary(_repo_root()), indent=2, sort_keys=True))
+    print()
+    print(render_policy_text(_repo_root()))
 
 
 def main() -> None:
@@ -398,6 +418,16 @@ def main() -> None:
 
     p = sub.add_parser("governance", help="Show governance and SSOT summary")
     p.set_defaults(func=cmd_governance)
+
+    p = sub.add_parser("policy-show", help="Show the canonical harness policy summary")
+    p.set_defaults(func=cmd_policy_show)
+
+    p = sub.add_parser(
+        "smoke-test-installed-tool",
+        help="Run a post-install smoke test against an installed tool directory",
+    )
+    p.add_argument("installed_tool_dir", help="Path to an installed Alteryx tool directory")
+    p.set_defaults(func=cmd_smoke_test_installed_tool)
 
     args = ap.parse_args()
     try:

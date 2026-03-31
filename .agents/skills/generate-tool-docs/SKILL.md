@@ -1,6 +1,11 @@
+---
+name: generate-tool-docs
+description: Generate or update docs for the factory or a generated tool, and keep generated output docs in the output repo aligned with harness docs.
+---
+
 # generate-tool-docs
 
-Generate or update docs for the factory or a generated tool.
+Generate or update docs for the factory or a generated tool, and keep generated output docs in the output repo aligned with harness docs.
 
 ## Use When
 
@@ -10,6 +15,6 @@ Generate or update docs for the factory or a generated tool.
 
 ## Workflow
 
-- Update the tool README.
-- Update the factory docs.
+- Update the tool README in the output repo.
+- Update the factory docs in the harness repo when the shared workflow changes.
 - Keep human docs and agent docs aligned.

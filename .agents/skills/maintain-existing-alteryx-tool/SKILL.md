@@ -1,3 +1,8 @@
+---
+name: maintain-existing-alteryx-tool
+description: Maintain an existing generated Alteryx Platform SDK tool safely.
+---
+
 # maintain-existing-alteryx-tool
 
 Inspect, update, and re-validate an existing Alteryx SDK tool without changing its intended behavior unless explicitly requested.

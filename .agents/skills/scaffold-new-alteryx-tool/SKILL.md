@@ -1,6 +1,11 @@
+---
+name: scaffold-new-alteryx-tool
+description: Create a new modern Alteryx Platform SDK tool using the factory's CLI-first workflow and promote the finished workspace into the output repo.
+---
+
 # scaffold-new-alteryx-tool
 
-Create a new modern Alteryx Platform SDK tool in the output repo.
+Create a new modern Alteryx Platform SDK tool using the factory's CLI-first workflow and promote the finished workspace into the output repo.
 
 ## Use When
 
@@ -19,8 +24,10 @@ Create a new modern Alteryx Platform SDK tool in the output repo.
 
 - Validate the tool spec.
 - Resolve the configured output repo path.
-- Create the tool directory in the output repo.
-- Scaffold the workspace from the factory template.
+- Follow the canonical harness policy from `toolsmith policy-show`.
+- Create or initialize the tool workspace only by running `ayx_plugin_cli`.
+- If the CLI is missing, broken, or cannot create the workspace, stop immediately and fix the CLI path. Do not fabricate workspace files by hand.
+- Scaffold the workspace from the CLI-generated SDK workspace only.
 - Write the tool README and metadata.
 
 ## Guardrails
@@ -28,8 +35,10 @@ Create a new modern Alteryx Platform SDK tool in the output repo.
 - Never hardcode repo paths.
 - Never write outside the configured output repo.
 - Do not overwrite an existing tool without an explicit update request.
+- Do not use another generated tool as a structural substitute.
+- Do not search for another tool to copy when the CLI path fails.
 
 ## Implementation Notes
 
-- Prefer `toolsmith scaffold` and shared template files over ad hoc generation.
+- Prefer `toolsmith init-tool`, `toolsmith scaffold`, and shared template files over ad hoc generation.
 - Keep output deterministic.

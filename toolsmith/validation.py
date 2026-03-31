@@ -4,11 +4,13 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from toolsmith.spec import load_spec
+from toolsmith.policy import harness_policy
 
 
 @dataclass(frozen=True)
@@ -62,9 +64,11 @@ def resolve_engine_command(explicit: str | None = None) -> str:
 
 
 def resolve_ayx_plugin_cli() -> str:
+    repo_venv = Path(__file__).resolve().parents[1] / ".venv" / "Scripts" / "ayx_plugin_cli.exe"
     common_candidates = [
         "ayx_plugin_cli",
         "ayx_plugin_cli.exe",
+        str(repo_venv),
         str(Path.home() / "AppData" / "Local" / "Alteryx" / "bin" / "ayx_plugin_cli.exe"),
         str(Path.home() / "AppData" / "Local" / "Alteryx" / "bin" / "ayx_plugin_cli"),
     ]
@@ -75,6 +79,33 @@ def resolve_ayx_plugin_cli() -> str:
     raise FileNotFoundError(
         "Could not find ayx_plugin_cli. Install ayx-plugin-cli into the active venv or confirm the Alteryx local bin path."
     )
+
+
+def verify_ayx_plugin_cli_runnable(ayx_plugin_cli: str) -> None:
+    candidates = [
+        [ayx_plugin_cli, "--help"],
+        [ayx_plugin_cli, "version"],
+    ]
+    errors: list[str] = []
+    for cmd in candidates:
+        completed = subprocess.run(cmd, capture_output=True, text=True, shell=False)
+        if completed.returncode == 0:
+            return
+        errors.append(
+            f"Command failed ({completed.returncode}): {' '.join(cmd)}\n"
+            f"{completed.stdout}\n{completed.stderr}"
+        )
+    raise RuntimeError(
+        "ayx_plugin_cli was resolved but is not runnable. The Tool Factory requires a working "
+        "CLI for workspace bootstrap.\n"
+        + "\n---\n".join(errors)
+    )
+
+
+def ensure_node_legacy_provider_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env.setdefault("NODE_OPTIONS", "--openssl-legacy-provider")
+    return env
 
 
 def ensure_validation_contract(tool_dir: Path) -> None:
@@ -116,11 +147,13 @@ def generate_validation_contract(tool_dir: Path) -> Path:
         workflow_path.write_text(
             "\n".join(
                 [
-                    f"<workflow name=\"{profile['toolName']} validation\" tool=\"Tool Factory\">",
-                    f"  <toolType>{profile['toolType']}</toolType>",
-                    f"  <strategy>{profile['workflowStrategy']}</strategy>",
-                    "  <notes>Replace with the generated workflow for the tool.</notes>",
-                    "</workflow>",
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                    f"<Workflow name=\"{profile['toolName']} validation\" tool=\"Tool Factory\">",
+                    "  <Nodes>",
+                    "  </Nodes>",
+                    "  <Connections>",
+                    "  </Connections>",
+                    "</Workflow>",
                     "",
                 ]
             ),
@@ -146,6 +179,21 @@ def generate_validation_contract(tool_dir: Path) -> Path:
     return path
 
 
+def run_designer_install_smoke_test(installed_tool_dir: Path) -> dict[str, Any]:
+    main_pyz = installed_tool_dir / "main.pyz"
+    if not main_pyz.exists():
+        raise FileNotFoundError(f"Missing installed runtime: {main_pyz}")
+    cmd = [sys.executable, os.fspath(main_pyz), "--help"]
+    completed = subprocess.run(cmd, capture_output=True, text=True, shell=False)
+    return {
+        "command": cmd,
+        "returnCode": completed.returncode,
+        "stdout": completed.stdout,
+        "stderr": completed.stderr,
+        "status": "passed" if completed.returncode == 0 else "failed",
+    }
+
+
 def run_validation_workflow(tool_dir: Path) -> dict[str, Any]:
     ensure_validation_contract(tool_dir)
     contract = json.loads(validation_contract_path(tool_dir).read_text(encoding="utf-8"))
@@ -168,6 +216,27 @@ def run_validation_workflow(tool_dir: Path) -> dict[str, Any]:
         "stdout": completed.stdout,
         "stderr": completed.stderr,
     }
+
+
+def installed_tool_dir_for(tool_dir: Path) -> Path:
+    spec = load_spec(tool_dir / "tool.yaml")
+    return Path.home() / "AppData" / "Roaming" / "Alteryx" / "Tools" / f"{spec.name.replace(' ', '')}_0_1_0"
+
+
+def run_post_install_validation(tool_dir: Path) -> dict[str, Any]:
+    policy = harness_policy(tool_dir)
+    summary: dict[str, Any] = {"enabled": policy.smoke_test_enabled, "status": "skipped"}
+    if not policy.smoke_test_enabled:
+        return summary
+    installed_dir = installed_tool_dir_for(tool_dir)
+    if not installed_dir.exists():
+        summary["reason"] = f"Installed tool directory not found: {installed_dir}"
+        return summary
+    smoke = run_designer_install_smoke_test(installed_dir)
+    summary["status"] = smoke["status"]
+    summary["smokeTest"] = smoke
+    summary["installedToolDir"] = str(installed_dir)
+    return summary
 
 
 def validation_summary(tool_dir: Path) -> dict[str, Any]:

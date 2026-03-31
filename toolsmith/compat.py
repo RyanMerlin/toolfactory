@@ -17,6 +17,7 @@ class Compat:
 
 
 # Single-target MVP: 2025.2
+# Deterministic CLI pin: ayx-plugin-cli 1.3.2 only.
 # Source: 25.1 release notes mention embedded Python upgraded to 3.10.18.
 # 25.2 release notes mention conda removal + PEDs for v2 tools.
 COMPAT_MATRIX: Dict[str, Compat] = {
@@ -27,7 +28,7 @@ COMPAT_MATRIX: Dict[str, Compat] = {
         recommended_dev_python="3.10.18",
         node_version="24.13.1",
         ayx_python_sdk="2.5.1",
-        ayx_plugin_cli="1.3.1",
+        ayx_plugin_cli="1.3.2",
     ),
     "2025.2": Compat(
         alteryx_version="2025.2",
@@ -37,7 +38,7 @@ COMPAT_MATRIX: Dict[str, Compat] = {
         # Use the current installed Node major for this harness environment.
         node_version="22.19.0",
         ayx_python_sdk="2.5.1",
-        ayx_plugin_cli="1.3.1",
+        ayx_plugin_cli="1.3.2",
     )
 }
 
