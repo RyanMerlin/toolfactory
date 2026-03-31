@@ -58,6 +58,11 @@ class ToolSpec:
     def omit_ui(self) -> bool:
         return bool(self.raw["spec"].get("omit_ui", False))
 
+    @property
+    def python(self) -> Dict[str, Any]:
+        value = self.raw["spec"].get("python", {})
+        return value if isinstance(value, dict) else {}
+
 
 def load_schema(schema_path: Path) -> Dict[str, Any]:
     return json.loads(schema_path.read_text(encoding="utf-8"))

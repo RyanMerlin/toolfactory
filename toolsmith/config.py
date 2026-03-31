@@ -60,14 +60,15 @@ def load_config(root: Path | None = None) -> FactoryConfig:
     root = root or repo_root()
     path = config_path(root)
     data: dict[str, Any] = default_config()
-    env_file_data = _parse_env_file(env_path(root))
-    if OUTPUT_REPO_ENV in env_file_data:
-        data["outputRepoPath"] = env_file_data[OUTPUT_REPO_ENV]
     if path.exists():
         loaded = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(loaded, dict):
             raise ValueError(f"Invalid config file: {path}")
         data.update(loaded)
+
+    env_file_data = _parse_env_file(env_path(root))
+    if OUTPUT_REPO_ENV in env_file_data:
+        data["outputRepoPath"] = env_file_data[OUTPUT_REPO_ENV]
 
     env_output = os.getenv(OUTPUT_REPO_ENV)
     if env_output:
@@ -117,6 +118,7 @@ def recommended_venv_commands() -> dict[str, str]:
         "create": "uv venv --python 3.10.18 .venv",
         "activate": r".\.venv\Scripts\activate",
         "install": "uv pip install -e .",
+        "installAyxPluginCli": "uv pip install ayx-plugin-cli",
     }
 
 
@@ -126,4 +128,18 @@ def ensure_output_repo_path(path: Path) -> Path:
         raise FileNotFoundError(f"Output repo path does not exist: {resolved}")
     if not (resolved / ".git").exists():
         raise ValueError(f"Output repo path is not a git repo root: {resolved}")
+    return resolved
+
+
+def ensure_not_harness_repo_target(target: Path, repo_root_path: Path | None = None) -> Path:
+    root = (repo_root_path or repo_root()).resolve()
+    resolved = target.expanduser().resolve()
+    if resolved == root:
+        raise ValueError(
+            f"Generated artifacts must not be written to the harness repo root: {resolved}"
+        )
+    if root in resolved.parents:
+        raise ValueError(
+            f"Generated artifacts must not be written inside the harness repo: {resolved}"
+        )
     return resolved

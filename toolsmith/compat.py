@@ -34,9 +34,8 @@ COMPAT_MATRIX: Dict[str, Compat] = {
         embedded_python="3.10.18",
         min_dev_python="3.10.13",
         recommended_dev_python="3.10.18",
-        # Alteryx docs historically said Node 14; some devs use Node 16 for fewer TS issues.
-        # For 2025.2 MVP, we lock Node 16 LTS line.
-        node_version="16.20.1",
+        # Use the current installed Node major for this harness environment.
+        node_version="22.19.0",
         ayx_python_sdk="2.5.1",
         ayx_plugin_cli="1.3.1",
     )

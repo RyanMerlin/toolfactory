@@ -50,6 +50,7 @@ def resolve_engine_command(explicit: str | None = None) -> str:
         "AlteryxEngineCmd.exe",
         r"C:\Program Files\Alteryx\bin\AlteryxEngineCmd.exe",
         r"C:\Program Files (x86)\Alteryx\bin\AlteryxEngineCmd.exe",
+        str(Path.home() / "AppData" / "Local" / "Alteryx" / "bin" / "AlteryxEngineCmd.exe"),
     ]
     for candidate in common_candidates:
         found = shutil.which(candidate) or candidate
@@ -57,6 +58,22 @@ def resolve_engine_command(explicit: str | None = None) -> str:
             return found
     raise FileNotFoundError(
         "Could not find AlteryxEngineCmd.exe. Set TOOLFACTORY_ALTERYX_ENGINE_CMD or install Alteryx Designer."
+    )
+
+
+def resolve_ayx_plugin_cli() -> str:
+    common_candidates = [
+        "ayx_plugin_cli",
+        "ayx_plugin_cli.exe",
+        str(Path.home() / "AppData" / "Local" / "Alteryx" / "bin" / "ayx_plugin_cli.exe"),
+        str(Path.home() / "AppData" / "Local" / "Alteryx" / "bin" / "ayx_plugin_cli"),
+    ]
+    for candidate in common_candidates:
+        found = shutil.which(candidate) or candidate
+        if Path(found).exists() or shutil.which(found):
+            return found
+    raise FileNotFoundError(
+        "Could not find ayx_plugin_cli. Install ayx-plugin-cli into the active venv or confirm the Alteryx local bin path."
     )
 
 

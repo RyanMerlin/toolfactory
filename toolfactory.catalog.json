@@ -1,4 +1,10 @@
 {
   "schemaVersion": 1,
-  "tools": {}
+  "tools": {
+    "jsonify": {
+      "packageName": "jsonify",
+      "path": "C:\\code\\sdk-tools\\jsonify",
+      "sourceRepo": "C:\\code\\toolfactory"
+    }
+  }
 }

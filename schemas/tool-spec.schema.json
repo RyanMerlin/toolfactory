@@ -39,7 +39,33 @@
         "author": { "type": "string" },
         "company": { "type": "string" },
         "package_name": { "type": "string" },
-        "omit_ui": { "type": "boolean" }
+        "omit_ui": { "type": "boolean" },
+        "python": {
+          "type": "object",
+          "properties": {
+            "package_mode": {
+              "type": "string",
+              "enum": [
+                "none",
+                "requirements",
+                "vendored-wheelhouse",
+                "editable-local"
+              ]
+            },
+            "dependencies": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "local_packages": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "entry_module": { "type": "string" },
+            "bootstrap_script": { "type": "string" },
+            "requires_network": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     }

@@ -25,6 +25,9 @@
       "path": "../.agents/skills/maintain-tool-catalog/SKILL.md"
     },
     {
+      "path": "../.agents/skills/maintain-existing-alteryx-tool/SKILL.md"
+    },
+    {
       "path": "../.agents/skills/troubleshoot-build-or-packaging-failure/SKILL.md"
     }
   ]

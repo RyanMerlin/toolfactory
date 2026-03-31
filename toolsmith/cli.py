@@ -11,7 +11,10 @@ from toolsmith.bootstrap import doctor
 from toolsmith.catalog import load_catalog, save_catalog, sync_catalog_from_output_repo
 from toolsmith.compat import resolve
 from toolsmith.config import ensure_output_repo_path, load_config, write_config
+from toolsmith.intent import generate_intent_payload, intent_root, write_intent_file
 from toolsmith.governance import governance_summary
+from toolsmith.maintenance import maintenance_report
+from toolsmith.pythonpack import ensure_python_packaging_layout
 from toolsmith.spec import find_tool_specs, load_schema, load_spec, validate_spec
 from toolsmith.validation import (
     ensure_validation_contract,
@@ -97,6 +100,7 @@ def cmd_scaffold(args: argparse.Namespace) -> None:
     spec = load_spec(Path(args.spec))
     scaffold_workspace(spec)
     generate_validation_contract(spec.path.parent)
+    ensure_python_packaging_layout(spec)
     print(f"Scaffolded workspace: tools/{spec.slug}/workspace")
 
 
@@ -104,6 +108,7 @@ def cmd_reconcile(args: argparse.Namespace) -> None:
     spec = load_spec(Path(args.spec))
     reconcile_workspace(spec, check=args.check)
     generate_validation_contract(spec.path.parent)
+    ensure_python_packaging_layout(spec)
     if args.check:
         print(f"OK (workspace up to date): {spec.slug}")
     else:
@@ -207,7 +212,43 @@ def cmd_init_tool(args: argparse.Namespace) -> None:
         encoding="utf-8",
     )
     generate_validation_contract(tool_dir)
+    ensure_python_packaging_layout(load_spec(spec_path))
     print(f"Initialized tool: {tool_dir}")
+
+
+def cmd_intent(args: argparse.Namespace) -> None:
+    repo_root = _repo_root()
+    payload = generate_intent_payload(
+        args.summary,
+        name=args.name,
+        slug=args.slug,
+        mode=args.mode,
+        inputs=args.input or [],
+        outputs=args.output or [],
+        workflow_expectation=args.workflow_expectation,
+        local_output_mode=args.local_output_mode,
+        source_code_kind=args.source_code_kind,
+        source_code_path=args.source_code_path or "",
+        maintenance_target=args.maintenance_target or "",
+        maintenance_goal=args.maintenance_goal or "",
+    )
+    tool_dir = intent_root(repo_root) / payload["metadata"]["slug"]
+    path = write_intent_file(tool_dir / "tool-intent.json", payload)
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(f"\nWrote intent: {path}")
+
+
+def cmd_maintain_tool(args: argparse.Namespace) -> None:
+    tool_dir = Path(args.tool_dir).resolve()
+    spec_path = tool_dir / "tool.yaml"
+    if not spec_path.exists():
+        candidates = sorted(tool_dir.rglob("tool.yaml"))
+        if not candidates:
+            raise FileNotFoundError(f"No tool.yaml found under: {tool_dir}")
+        spec_path = candidates[0]
+        tool_dir = spec_path.parent
+    report = maintenance_report(tool_dir)
+    print(json.dumps(report, indent=2, sort_keys=True))
 
 
 def cmd_validate_workflow(args: argparse.Namespace) -> None:
@@ -224,9 +265,19 @@ def cmd_validate_summary(args: argparse.Namespace) -> None:
 def cmd_doctor(_: argparse.Namespace) -> None:
     status = doctor(_repo_root())
     print(json.dumps(status, indent=2, sort_keys=True))
-    if not status["outputRepoExists"] or not status["outputRepoIsGitRepo"] or status["factoryVenvVersion"] != "3.10.18":
+    if (
+        not status["outputRepoExists"]
+        or not status["outputRepoIsGitRepo"]
+        or not status.get("ayxPluginCli")
+        or status["factoryVenvCheck"] is not None
+    ):
         print(
-            "\nSetup hint: run `uv venv --python 3.10.18 .venv`, then `uv pip install -e .`, then re-run `toolsmith doctor`.",
+            "\nSetup hint: run `uv venv --python 3.10.18 .venv`, then `uv pip install -e .`, then `uv pip install ayx-plugin-cli`, then re-run `toolsmith doctor`. If you have a local Alteryx user install, `ayx_plugin_cli` and `AlteryxEngineCmd.exe` can also be resolved from `C:\\Users\\ryan.merlin\\AppData\\Local\\Alteryx\\bin`.",
+            file=sys.stderr,
+        )
+    if status.get("harnessGeneratedOutputs"):
+        print(
+            "\nGuard hint: generated outputs must resolve to the configured output repo, not the harness repo.",
             file=sys.stderr,
         )
 
@@ -314,6 +365,33 @@ def main() -> None:
     p.add_argument("--alteryx-version", default="2025.2", help="Target Alteryx version")
     p.add_argument("--description", default="", help="Short tool description")
     p.set_defaults(func=cmd_init_tool)
+
+    p = sub.add_parser("intent", help="Create a tool intent file from a natural-language summary")
+    p.add_argument("summary", help="Natural-language description of the tool")
+    p.add_argument("--name", default="", help="Human-readable tool name")
+    p.add_argument("--slug", default="", help="Tool slug")
+    p.add_argument(
+        "--mode",
+        default="from-scratch",
+        choices=["from-scratch", "wrap-existing-python", "maintain-existing-tool"],
+    )
+    p.add_argument("--input", action="append", help="Input description; repeat for multiple inputs")
+    p.add_argument("--output", action="append", help="Output description; repeat for multiple outputs")
+    p.add_argument("--workflow-expectation", default="", help="Validation expectation")
+    p.add_argument("--local-output-mode", default="", help="Where validation writes local files")
+    p.add_argument(
+        "--source-code-kind",
+        default="none",
+        choices=["none", "python-package", "python-project", "repository"],
+    )
+    p.add_argument("--source-code-path", default="", help="Path to existing code, if any")
+    p.add_argument("--maintenance-target", default="", help="Target tool slug for maintenance mode")
+    p.add_argument("--maintenance-goal", default="", help="Maintenance goal description")
+    p.set_defaults(func=cmd_intent)
+
+    p = sub.add_parser("maintain-tool", help="Inspect an existing tool folder for maintenance")
+    p.add_argument("tool_dir", help="Path to a tool folder containing tool.yaml")
+    p.set_defaults(func=cmd_maintain_tool)
 
     p = sub.add_parser("doctor", help="Check the repo bootstrap and active configuration")
     p.set_defaults(func=cmd_doctor)

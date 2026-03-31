@@ -8,8 +8,8 @@ from pathlib import Path
 
 from toolsmith.catalog import load_catalog
 from toolsmith.compat import resolve
-from toolsmith.config import load_config, recommended_venv_commands
-from toolsmith.validation import resolve_engine_command
+from toolsmith.config import ensure_not_harness_repo_target, load_config, recommended_venv_commands
+from toolsmith.validation import resolve_ayx_plugin_cli, resolve_engine_command
 
 
 def _venv_python_path(repo_root: Path) -> Path:
@@ -40,6 +40,10 @@ def doctor(repo_root: Path) -> dict[str, object]:
     output_repo = cfg.output_repo_path
     python_path = shutil.which("python")
     node_path = shutil.which("node")
+    try:
+        ayx_plugin_cli_path = resolve_ayx_plugin_cli()
+    except Exception:
+        ayx_plugin_cli_path = None
     venv_python = _venv_python_path(repo_root)
     venv_python_version = _python_version_from_exe(venv_python)
     compat = resolve("2025.2")
@@ -70,12 +74,20 @@ def doctor(repo_root: Path) -> dict[str, object]:
         {"name": "factory-venv", "status": "pass" if venv_python.exists() else "fail"},
         {"name": "factory-venv-python", "status": "pass" if venv_ok else "fail"},
         {"name": "node", "status": "pass" if node_path else "fail"},
+        {"name": "ayx-plugin-cli", "status": "pass" if ayx_plugin_cli_path else "fail"},
         {"name": "alteryx-engine", "status": "pass" if engine_path else "fail"},
         {"name": "config-file", "status": "pass" if (repo_root / "toolfactory.config.json").exists() else "fail"},
         {"name": "env-file", "status": "pass" if (repo_root / ".env").exists() else "warn"},
         {"name": "template-manifest", "status": "pass" if (repo_root / "toolfactory.template-manifest.json").exists() else "fail"},
         {"name": "compatibility-file", "status": "pass" if (repo_root / "toolfactory.compatibility.json").exists() else "fail"},
+        {"name": "output-not-harness", "status": "pass"},
     ]
+    harness_generated_outputs = False
+    try:
+        ensure_not_harness_repo_target(output_repo, repo_root)
+    except Exception:
+        harness_generated_outputs = True
+        checks[-1] = {"name": "output-not-harness", "status": "fail"}
     status = {
         "repoRoot": str(repo_root),
         "outputRepoPath": str(output_repo),
@@ -86,6 +98,7 @@ def doctor(repo_root: Path) -> dict[str, object]:
         "factoryVenvVersion": venv_python_version,
         "factoryVenvCheck": venv_reason,
         "node": node_path,
+        "ayxPluginCli": ayx_plugin_cli_path,
         "alteryxEngineCmd": engine_path,
         "alteryxEngineCmdError": engine_error,
         "toolfactoryConfig": str(repo_root / "toolfactory.config.json"),
@@ -99,7 +112,9 @@ def doctor(repo_root: Path) -> dict[str, object]:
             "createVenvCommand": recommended_venv_commands()["create"],
             "activateVenvCommand": recommended_venv_commands()["activate"],
             "installToolsmithCommand": recommended_venv_commands()["install"],
+            "installAyxPluginCliCommand": recommended_venv_commands()["installAyxPluginCli"],
             "minimumPython": compat.min_dev_python,
         },
+        "harnessGeneratedOutputs": harness_generated_outputs,
     }
     return status

@@ -10,3 +10,10 @@ spec:
   category: "Developer"
   description: "Describe the tool here."
   package_name: "example_tool"
+  python:
+    package_mode: "none"
+    dependencies: []
+    local_packages: []
+    entry_module: ""
+    bootstrap_script: "build.ps1"
+    requires_network: false

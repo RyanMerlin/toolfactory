@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tool Factory Tool Intent",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "intent"],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "toolsmith.alteryx.intent/v1"
+    },
+    "kind": {
+      "type": "string",
+      "const": "AyxToolIntent"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "slug"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "intent": {
+      "type": "object",
+      "required": ["mode", "summary", "inputs", "outputs", "validation"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "from-scratch",
+            "wrap-existing-python",
+            "maintain-existing-tool"
+          ]
+        },
+        "summary": { "type": "string", "minLength": 1 },
+        "inputs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "validation": {
+          "type": "object",
+          "required": ["workflowExpectation"],
+          "properties": {
+            "workflowExpectation": { "type": "string", "minLength": 1 },
+            "localOutputMode": { "type": "string", "minLength": 1 },
+            "acceptanceNotes": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            }
+          },
+          "additionalProperties": false
+        },
+        "sourceCode": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["none", "python-package", "python-project", "repository"]
+            },
+            "path": { "type": "string" },
+            "notes": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "maintenance": {
+          "type": "object",
+          "properties": {
+            "targetToolSlug": { "type": "string", "minLength": 1 },
+            "updateGoal": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

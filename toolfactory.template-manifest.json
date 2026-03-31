@@ -1,6 +1,10 @@
 {
   "schemaVersion": 1,
   "templates": {
+    "tool-intent": {
+      "path": "schemas/tool-intent.schema.json",
+      "purpose": "Natural-language creation and maintenance intent contract"
+    },
     "tool-skeleton": {
       "path": "templates/tool-skeleton",
       "purpose": "Starter tool scaffold"

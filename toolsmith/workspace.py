@@ -15,6 +15,7 @@ from packaging.version import Version
 
 from toolsmith.compat import Compat, resolve
 from toolsmith.spec import ToolSpec, dist_dir, tool_dir_from_spec_path, workspace_dir
+from toolsmith.validation import resolve_ayx_plugin_cli
 
 IGNORED_WORKSPACE_PARTS = {
     "build",
@@ -199,6 +200,7 @@ def scaffold_workspace(spec: ToolSpec, workspace_root: Path | None = None) -> No
     tool_dir = tool_dir_from_spec_path(spec.path)
     ws_dir = workspace_root or workspace_dir(tool_dir)
     compat = resolve(spec.alteryx_version)
+    ayx_plugin_cli = resolve_ayx_plugin_cli()
 
     enforce_dev_runtime(compat)
 
@@ -207,7 +209,7 @@ def scaffold_workspace(spec: ToolSpec, workspace_root: Path | None = None) -> No
     # Non-interactive init using documented parameters (package-name + backend-language are required).
     # If you omit args, CLI waits for stdin.
     cmd_init = [
-        "ayx_plugin_cli",
+        ayx_plugin_cli,
         "sdk-workspace-init",
         "--package-name",
         spec.package_name,
@@ -229,7 +231,7 @@ def scaffold_workspace(spec: ToolSpec, workspace_root: Path | None = None) -> No
     omit_ui_flag = "--omit-ui" if spec.omit_ui else "--no-omit-ui"
 
     base_create_tool = [
-        "ayx_plugin_cli",
+        ayx_plugin_cli,
         "create-ayx-plugin",
         "--tool-name",
         spec.name,
@@ -252,7 +254,7 @@ def scaffold_workspace(spec: ToolSpec, workspace_root: Path | None = None) -> No
     )
 
     # Ensure config/manifests regenerated
-    _run(["ayx_plugin_cli", "generate-config-files"], cwd=ws_dir)
+    _run([ayx_plugin_cli, "generate-config-files"], cwd=ws_dir)
 
     # Patch workspace json for python_version if present
     ws_json = ws_dir / "ayx_workspace.json"
@@ -295,13 +297,14 @@ def reconcile_workspace(spec: ToolSpec, check: bool = False) -> None:
 def build_yxi(spec: ToolSpec) -> Path:
     tool_dir = tool_dir_from_spec_path(spec.path)
     ws_dir = workspace_dir(tool_dir)
+    ayx_plugin_cli = resolve_ayx_plugin_cli()
 
     if not (ws_dir / "ayx_workspace.json").exists():
         raise RuntimeError(
             f"No workspace found for {spec.slug}. Run: toolsmith scaffold {spec.path}"
         )
 
-    _run(["ayx_plugin_cli", "create-yxi"], cwd=ws_dir)
+    _run([ayx_plugin_cli, "create-yxi"], cwd=ws_dir)
 
     yxi_dir = ws_dir / "build" / "yxi"
     if not yxi_dir.exists():

@@ -17,13 +17,21 @@ Tool Factory is the harness repo for generating and maintaining Alteryx Platform
 
 ## Operating Rules
 
+- Tool Factory has three first-class entry modes:
+  - natural-language creation for new tools
+  - import/packaging of existing Python code
+  - maintenance of existing SDK tools
+- Use `schemas/tool-intent.schema.json` as the canonical intent contract for new tool creation and maintenance requests.
 - Keep the harness repo and output repo separate.
 - Use git commits to track evolution of a single workflow implementation over time.
 - Use separate folders for materially different workflow designs or specs.
 - Do not hardcode absolute output paths in tool generation logic.
 - Treat `toolsmith` as the deterministic CLI surface for scaffold, validate, reconcile, and build.
+- Generated intent files belong in the configured output repo, not the harness repo.
 - Keep `.env` out of git; use `.env.example` for the checked-in reference values.
 - Use `toolsmith init-tool` to create a new tool from the factory template.
+- Use `toolsmith intent` to convert natural-language requirements into a tool-intent file.
+- Use `toolsmith maintain-tool` to inspect and update an existing tool safely.
 - Use `toolsmith export <slug>` to publish a generated tool into the configured output repo.
 - Prefer edits to templates and scripts over one-off manual changes in generated tools.
 - Do not break existing generated tools when updating templates or shared logic.
@@ -47,3 +55,7 @@ Tool Factory is the harness repo for generating and maintaining Alteryx Platform
 - Use the plugin layer for distribution and reuse.
 - Use hooks only for optional guardrails.
 - Use the Codex SDK only for programmatic orchestration and CI/CD.
+- Prefer explicit tool intent files over free-form prose once the tool is being built.
+- Prefer `docs/reference/` for local Alteryx SDK context before browsing the web.
+- For new example tools, use the supported Alteryx CLI path first: initialize a temp workspace, generate the tool there, package it, then promote the finished workspace into the output repo.
+- Keep generated artifacts out of the harness repo. The harness documents the pattern; the output repo owns the actual tool workspace, package, and build outputs.
