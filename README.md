@@ -36,6 +36,7 @@ Tool Factory is the harness repo for generating, validating, packaging, and main
 - `.codex-plugin/`: distributable Codex plugin metadata.
 - `docs/agent/quick-read.md`: the fastest read path for agents.
 - `docs/reference/`: curated local Alteryx SDK references for offline agent use.
+- `ARCHITECTURE.md`: plain-English overview of the Codex, CLI, and tool factory model.
 - `AGENTS.md`: durable operating rules for Codex and humans.
 - Generated tool specs and workspaces live in the configured output repo, not here.
 

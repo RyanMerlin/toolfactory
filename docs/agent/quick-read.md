@@ -25,6 +25,7 @@ Tool Factory is the harness repo for generating, validating, packaging, and main
 - [toolfactory.governance.json](/C:/code/toolfactory/toolfactory.governance.json): governance policy summary
 - [toolfactory.template-manifest.json](/C:/code/toolfactory/toolfactory.template-manifest.json): template catalog
 - [docs/reference/README.md](/C:/code/toolfactory/docs/reference/README.md): local curated Alteryx SDK references
+- [ARCHITECTURE.md](/C:/code/toolfactory/ARCHITECTURE.md): plain-English architecture overview
 
 ## Canonical Commands
 
